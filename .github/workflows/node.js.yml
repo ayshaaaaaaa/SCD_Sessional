@@ -1,0 +1,51 @@
+# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
+
+name: Docker Images build
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+  # build docker images for each service
+  # and push them to the docker registrynam
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Use Node.js ${{ matrix.node-version }}
+      # This step sets up the Node.js environment for the workflow
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+      #this logs into dockerhub using the secrets defined in the repository settings
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    #This builds teh docker images in every service folder by going into a dir and making the image using dockerfiel
+
+    - name: Build and push Docker images
+      run: |
+        for currdir in $(ls -d */); do
+          cd $currdir
+          docker build -t ${{ayshahashmi04}}/${{ secrets.SCD_Sessional }}:${{ github.sha }} .
+          docker push ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO_NAME }}:${{ github.sha }}
+          cd ..
+        done
+
+    - name: build image and push to docker hub
+      uses: docker/build-push-action@v4
+    - run: npm ci
+    - run: npm run build --if-present
+    - run: npm test
