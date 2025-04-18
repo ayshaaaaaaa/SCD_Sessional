@@ -37,6 +37,7 @@ jobs:
 
     - name: Build and push Docker images
       run: |
+        # Loop through each directory in the current directory
         for currdir in $(ls -d */); do
           cd $currdir
           docker build -t ${{ayshahashmi04}}/${{ secrets.SCD_Sessional }}:${{ github.sha }} .
